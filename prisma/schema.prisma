@@ -1,0 +1,214 @@
+// This is your Prisma schema file for THE BROAST FACTORY
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Restaurant {
+  id                       String   @id @default(cuid())
+  name                     String
+  logoUrl                  String?
+  coverImageUrl            String?
+  description              String   @db.Text
+  phone                    String
+  email                    String
+  address                  String   @db.Text
+  city                     String
+  state                    String
+  pincode                  String
+  latitude                 Float?
+  longitude                Float?
+  openingTime              String   // e.g. "12:00 PM"
+  closingTime              String   // e.g. "01:00 AM"
+  isOpen                   Boolean  @default(true)
+  deliveryEnabled          Boolean  @default(true)
+  pickupEnabled            Boolean  @default(true)
+  deliveryFee              Float    @default(40.0)
+  minimumOrderAmount       Float    @default(150.0)
+  estimatedDeliveryMinutes Int      @default(35)
+  taxPercentage            Float    @default(5.0)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?    @db.Text
+  imageUrl    String?
+  icon        String?
+  sortOrder   Int        @default(0)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  items       MenuItem[]
+
+  @@index([sortOrder])
+  @@index([isActive])
+}
+
+model MenuItem {
+  id                     String        @id @default(cuid())
+  name                   String
+  slug                   String        @unique
+  description            String        @db.Text
+  price                  Float
+  categoryId             String
+  category               Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  imageUrl               String?
+  isVeg                  Boolean       @default(false)
+  isAvailable            Boolean       @default(true)
+  isFeatured             Boolean       @default(false)
+  preparationTimeMinutes Int           @default(15)
+  sortOrder              Int           @default(0)
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+  optionGroups           OptionGroup[]
+  orderItems             OrderItem[]
+
+  @@index([categoryId])
+  @@index([isFeatured])
+  @@index([isAvailable])
+  @@index([sortOrder])
+}
+
+model OptionGroup {
+  id            String    @id @default(cuid())
+  name          String
+  menuItemId    String
+  menuItem      MenuItem  @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  isRequired    Boolean   @default(false)
+  minSelections Int       @default(0)
+  maxSelections Int       @default(1)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  options       Option[]
+
+  @@index([menuItemId])
+}
+
+model Option {
+  id            String      @id @default(cuid())
+  name          String
+  price         Float       @default(0.0)
+  optionGroupId String
+  optionGroup   OptionGroup @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
+  isAvailable   Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([optionGroupId])
+  @@index([isAvailable])
+}
+
+model Order {
+  id                String          @id @default(cuid())
+  orderNumber       String          @unique
+  customerName      String
+  customerPhone     String
+  customerEmail     String
+  orderType         String          // "DELIVERY" | "PICKUP"
+  deliveryAddress   String?         @db.Text
+  deliveryLandmark  String?
+  deliveryCity      String?
+  deliveryPincode   String?
+  customerNotes     String?         @db.Text
+  subtotal          Float
+  deliveryFee       Float           @default(0.0)
+  taxAmount         Float           @default(0.0)
+  discountAmount    Float           @default(0.0)
+  totalAmount       Float
+  paymentStatus     String          @default("PENDING") // PENDING, PAID, FAILED, CANCELLED, REFUNDED
+  orderStatus       String          @default("ORDER_RECEIVED") // ORDER_RECEIVED, CONFIRMED, PREPARING, READY, OUT_FOR_DELIVERY, DELIVERED, PICKED_UP, CANCELLED
+  razorpayOrderId   String?         @unique
+  razorpayPaymentId String?
+  razorpaySignature String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  items             OrderItem[]
+  paymentEvents     PaymentEvent[]
+  emailLogs         EmailLog[]
+
+  @@index([orderNumber])
+  @@index([customerPhone])
+  @@index([customerEmail])
+  @@index([orderStatus])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id                 String             @id @default(cuid())
+  orderId            String
+  order              Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId         String?
+  menuItem           MenuItem?          @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+  itemNameAtPurchase String
+  priceAtPurchase    Float
+  quantity           Int
+  totalPrice         Float
+  createdAt          DateTime           @default(now())
+  options            OrderItemOption[]
+
+  @@index([orderId])
+  @@index([menuItemId])
+}
+
+model OrderItemOption {
+  id                   String    @id @default(cuid())
+  orderItemId          String
+  orderItem            OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  optionNameAtPurchase String
+  priceAtPurchase      Float
+  quantity             Int       @default(1)
+
+  @@index([orderItemId])
+}
+
+model AdminUser {
+  id                  String    @id @default(cuid())
+  username            String    @unique
+  passwordHash        String
+  isActive            Boolean   @default(true)
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model PaymentEvent {
+  id          String   @id @default(cuid())
+  orderId     String?
+  order       Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  eventType   String
+  paymentId   String?
+  payloadHash String?
+  processedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([orderId])
+  @@index([paymentId])
+  @@index([eventType])
+}
+
+model EmailLog {
+  id           String   @id @default(cuid())
+  orderId      String?
+  order        Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  emailType    String
+  recipient    String
+  status       String   // SENT, FAILED
+  errorMessage String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  @@index([orderId])
+  @@index([emailType])
+  @@index([status])
+}

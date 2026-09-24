@@ -1,26 +1,160 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-space: var(--font-space-grotesk), sans-serif;
+
+  /* Brand Colors: Electric Glowing Purple */
+  --color-brand-purple-50: #faf5ff;
+  --color-brand-purple-100: #f3e8ff;
+  --color-brand-purple-200: #e9d5ff;
+  --color-brand-purple-300: #d8b4fe;
+  --color-brand-purple-400: #c084fc;
+  --color-brand-purple-500: #a855f7;
+  --color-brand-purple-600: #9333ea;
+  --color-brand-purple-700: #7e22ce;
+  --color-brand-purple-800: #6b21a8;
+  --color-brand-purple-900: #581c87;
+
+  /* Primary Electric Violet */
+  --color-primary: #9333ea;
+  --color-primary-hover: #a855f7;
+  --color-primary-light: #2e1065;
+
+  /* Dark Theme Surfaces */
+  --color-dark-bg: #090d16;
+  --color-dark-surface: #0f172a;
+  --color-dark-card: #131b2e;
+  --color-dark-card-hover: #1a243d;
+  --color-dark-border: #1e293b;
+
+  /* Glow and Card Shadows */
+  --shadow-glow-sm: 0 0 15px 0px rgba(168, 85, 247, 0.35);
+  --shadow-glow: 0 0 28px 2px rgba(147, 51, 234, 0.45);
+  --shadow-glow-lg: 0 0 45px 5px rgba(168, 85, 247, 0.6);
+  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-card-hover: 0 20px 40px -12px rgba(147, 51, 234, 0.35), 0 0 0 1px rgba(168, 85, 247, 0.3);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #090d16;
+  --foreground: #f8fafc;
+  --primary-purple: #9333ea;
+  --primary-purple-glow: rgba(147, 51, 234, 0.5);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+  background-color: #090d16;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #090d16;
+  color: #f8fafc;
+  font-family: var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar for Dark Theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090d16;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+  border: 2px solid #090d16;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9333ea;
+}
+
+/* Purple Glow Utility Classes */
+.purple-glow-sm {
+  box-shadow: 0 0 18px -2px rgba(168, 85, 247, 0.4);
+}
+
+.purple-glow {
+  box-shadow: 0 0 32px -4px rgba(147, 51, 234, 0.55);
+}
+
+.purple-glow-lg {
+  box-shadow: 0 0 55px -2px rgba(168, 85, 247, 0.7);
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #e879f9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-ambient-glow {
+  background: radial-gradient(circle at 50% 10%, rgba(147, 51, 234, 0.18) 0%, rgba(9, 13, 22, 0) 70%);
+}
+
+.glass-panel {
+  background: rgba(19, 27, 46, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Micro-interaction animation utilities */
+@keyframes pulseSubtle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.88;
+    transform: scale(1.02);
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulseSubtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: floatSlow 5s ease-in-out infinite;
+}
+
+/* Focus styles for keyboard accessibility */
+:focus-visible {
+  outline: 2px solid #a855f7;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
